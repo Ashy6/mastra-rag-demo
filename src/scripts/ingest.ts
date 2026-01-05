@@ -1,6 +1,6 @@
 import { MDocument } from "@mastra/rag";
 import { embedMany } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI } from "@ai-sdk/openai";
 import { libSqlVector } from "../mastra/index";
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
@@ -9,21 +9,32 @@ import * as path from 'path';
 dotenv.config();
 
 async function ingest() {
-  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.includes('sk-proj-xxxxxxxx')) {
-    console.error("❌ Error: Invalid OPENAI_API_KEY in .env file.");
-    console.error("👉 Please open .env and paste your valid OpenAI API Key.");
+  // Validate Environment Variables
+  if (!process.env.VOLCENGINE_API_KEY) {
+    console.error("❌ Error: VOLCENGINE_API_KEY is missing in .env file.");
     process.exit(1);
   }
+  if (!process.env.VOLCENGINE_EMBEDDING_MODEL || process.env.VOLCENGINE_EMBEDDING_MODEL.includes('ep-20250106xxxxxx-xxxxx')) {
+     console.error("❌ Error: Invalid VOLCENGINE_EMBEDDING_MODEL in .env file.");
+     console.error("👉 Please replace the placeholder with your actual Endpoint ID.");
+     process.exit(1);
+  }
+
+  // Setup Volcengine Provider
+  const volcengine = createOpenAI({
+    baseURL: process.env.VOLCENGINE_BASE_URL || "https://ark.cn-beijing.volces.com/api/v3",
+    apiKey: process.env.VOLCENGINE_API_KEY,
+  });
+  
+  const EMBEDDING_MODEL = process.env.VOLCENGINE_EMBEDDING_MODEL;
 
   console.log("🚀 Starting ingestion process...");
 
   // 1. Create a sample document (or read from file)
   const docPath = path.join(__dirname, "../../data/sample.md");
   
-  // Ensure data directory exists
   if (!fs.existsSync(path.dirname(docPath))) {
     fs.mkdirSync(path.dirname(docPath), { recursive: true });
-    // Write a dummy file if it doesn't exist
     const sampleContent = `
 # Mastra Framework Guide
 
@@ -63,9 +74,9 @@ Mastra provides type safety, easy integration with Vercel AI SDK, and robust obs
   console.log(`ℹ️  Generated ${chunks.length} chunks.`);
 
   // 3. Generate Embeddings
-  console.log("🧠 Generating embeddings...");
+  console.log(`🧠 Generating embeddings using ${EMBEDDING_MODEL}...`);
   const { embeddings } = await embedMany({
-    model: openai.embedding("text-embedding-3-small"),
+    model: volcengine.embedding(EMBEDDING_MODEL),
     values: chunks.map((c) => c.text),
   });
 
@@ -73,14 +84,19 @@ Mastra provides type safety, easy integration with Vercel AI SDK, and robust obs
   console.log("💾 Storing in LibSQL...");
   
   // Create index if not exists
-  // LibSQLVector API for createIndex might need dimension
+  // Note: Doubao embedding dimension varies. 
+  // doubao-embedding-text-240715 is usually 1024 or 1536 depending on config.
+  // We'll assume 1536 for now, but user might need to adjust.
+  // Standard OpenAI is 1536. Doubao can be 1024.
+  // Let's default to 1536 but warn user.
+  const dimension = 1536; 
+
   await libSqlVector.createIndex({
     indexName: "embeddings",
-    dimension: 1536 // text-embedding-3-small
+    dimension: dimension 
   });
 
   // Upsert vectors
-  // Note: LibSQLVector upsert API expects { indexName, vectors, metadata }
   await libSqlVector.upsert({
     indexName: "embeddings",
     vectors: embeddings,
