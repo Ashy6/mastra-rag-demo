@@ -15,10 +15,11 @@ async function ingest() {
     console.error("❌ 错误: .env 文件中缺少 VOLCENGINE_API_KEY。");
     process.exit(1);
   }
+
   if (!process.env.VOLCENGINE_EMBEDDING_MODEL || process.env.VOLCENGINE_EMBEDDING_MODEL.includes('ep-20250106xxxxxx-xxxxx')) {
-     console.error("❌ 错误: .env 文件中 VOLCENGINE_EMBEDDING_MODEL 无效。");
-     console.error("👉 请将占位符替换为您实际的接入点 ID (Endpoint ID)。");
-     process.exit(1);
+    console.error("❌ 错误: .env 文件中 VOLCENGINE_EMBEDDING_MODEL 无效。");
+    console.error("👉 请将占位符替换为您实际的接入点 ID (Endpoint ID)。");
+    process.exit(1);
   }
 
   const EMBEDDING_MODEL = process.env.VOLCENGINE_EMBEDDING_MODEL;
@@ -63,21 +64,21 @@ Mastra 提供类型安全、与 Vercel AI SDK 的轻松集成以及强大的可�
   // 2. 创建 MDocument 并切片
   console.log("✂️  正在对文档进行切片...");
   const doc = MDocument.fromText(fileContent);
-  
+
   const chunks = await doc.chunk({
     strategy: "recursive",
     maxSize: 512,
     overlap: 50,
   });
-  
+
   console.log(`ℹ️  生成了 ${chunks.length} 个切片。`);
 
   // 3. 生成 Embeddings
   console.log(`🧠 正在使用 ${EMBEDDING_MODEL} 生成向量...`);
-  
+
   // 注意：使用原生 OpenAI SDK 是因为 AI SDK 的 createOpenAI 可能会注入不兼容的参数
   // 或包含与火山引擎特定要求冲突的模型名称验证逻辑。
-  
+
   // --- 火山引擎配置 (Volcengine) ---
   const openai = new OpenAI({
     apiKey: process.env.VOLCENGINE_API_KEY,
@@ -101,7 +102,7 @@ Mastra 提供类型安全、与 Vercel AI SDK 的轻松集成以及强大的可�
 
   // 4. 存储到 LibSQL
   console.log("💾 正在存储到 LibSQL...");
-  
+
   // 如果索引不存在则创建
   // 动态获取 Embedding 维度，避免模型切换导致维度不匹配
   const dimension = embeddings.length > 0 ? embeddings[0].length : 1536;
@@ -109,7 +110,7 @@ Mastra 提供类型安全、与 Vercel AI SDK 的轻松集成以及强大的可�
 
   await libSqlVector.createIndex({
     indexName: "embeddings",
-    dimension: dimension 
+    dimension: dimension
   });
 
   // 更新或插入向量
