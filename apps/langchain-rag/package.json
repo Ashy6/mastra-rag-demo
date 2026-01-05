@@ -1,12 +1,31 @@
 {
-  "name": "langchain-rag",
+  "name": "langchain-rag-demo",
   "version": "1.0.0",
-  "description": "LangChain RAG Demo",
-  "main": "index.js",
+  "description": "LangChain RAG Demo with Volcengine",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "ingest": "ts-node src/ingest.ts",
+    "query": "ts-node src/query.ts"
   },
-  "keywords": [],
+  "keywords": [
+    "langchain",
+    "rag",
+    "volcengine"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/community": "^0.3.0",
+    "@langchain/core": "^0.3.0",
+    "@langchain/openai": "^0.3.0",
+    "dotenv": "^16.4.5",
+    "hnswlib-node": "^3.0.0",
+    "langchain": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
 }
