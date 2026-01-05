@@ -1,6 +1,7 @@
 # Mastra Framework Overview
 
 Mastra is a TypeScript framework for building AI applications. It provides tools for:
+
 - Agents: Autonomous entities that can perform tasks.
 - RAG: Retrieval-Augmented Generation for grounding AI in data.
 - Workflows: Orchestrating complex sequences of actions.
@@ -14,6 +15,7 @@ Mastra is a TypeScript framework for building AI applications. It provides tools
 ## How RAG Works in Mastra
 
 RAG involves:
+
 1. **Ingestion**: Loading documents and splitting them into chunks.
 2. **Embedding**: Converting chunks into vector representations using an embedding model (e.g., OpenAI).
 3. **Storage**: Saving vectors in a database like PostgreSQL with pgvector.

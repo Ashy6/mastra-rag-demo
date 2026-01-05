@@ -27,9 +27,13 @@ async function ingest() {
 
   // 1. 创建示例文档 (或从文件读取)
   const docPath = path.join(__dirname, "../../data/sample.md");
-  
-  if (!fs.existsSync(path.dirname(docPath))) {
-    fs.mkdirSync(path.dirname(docPath), { recursive: true });
+  const docDir = path.dirname(docPath);
+
+  if (!fs.existsSync(docDir)) {
+    fs.mkdirSync(docDir, { recursive: true });
+  }
+
+  if (!fs.existsSync(docPath)) {
     const sampleContent = `
 # Mastra 框架指南
 
