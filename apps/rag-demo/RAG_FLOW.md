@@ -6,26 +6,26 @@
 
 ```mermaid
 graph TD
-    subgraph "数据入库阶段 (Ingestion Phase)"
-        A[原始文档 (data/sample.md)] -->|读取| B(MDocument)
-        B -->|切片 (Chunking)| C[文本切片 (Chunks)]
-        C -->|API 请求| D{火山引擎 Embedding 模型}
-        D -->|返回向量| E[向量数据 (Vectors)]
-        E -->|存储| F[(本地数据库 mastra.db)]
+    subgraph Ingestion ["数据入库阶段 (Ingestion Phase)"]
+        A["原始文档 (data/sample.md)"] -->|读取| B(MDocument)
+        B -->|"切片 (Chunking)"| C["文本切片 (Chunks)"]
+        C -->|"API 请求"| D{"火山引擎 Embedding 模型"}
+        D -->|"返回向量"| E["向量数据 (Vectors)"]
+        E -->|存储| F[("本地数据库 mastra.db")]
         
         style A fill:#e1f5fe
         style F fill:#fff9c4
     end
 
-    subgraph "检索问答阶段 (Query Phase)"
-        G[用户提问 (CLI)] -->|API 请求| H{火山引擎 Embedding 模型}
-        H -->|返回问题向量| I[查询向量]
-        I -->|向量相似度搜索| F
-        F -->|返回相关切片| J[上下文 (Context)]
+    subgraph Query ["检索问答阶段 (Query Phase)"]
+        G["用户提问 (CLI)"] -->|"API 请求"| H{"火山引擎 Embedding 模型"}
+        H -->|"返回问题向量"| I["查询向量"]
+        I -->|"向量相似度搜索"| F
+        F -->|"返回相关切片"| J["上下文 (Context)"]
         
-        J -->|组合| K[提示词 (System Prompt + Context + Question)]
-        K -->|API 请求| L{火山引擎 Chat 模型}
-        L -->|流式生成| M[最终回答]
+        J -->|组合| K["提示词 (System Prompt + Context + Question)"]
+        K -->|"API 请求"| L{"火山引擎 Chat 模型"}
+        L -->|"流式生成"| M[最终回答]
         
         style G fill:#e1f5fe
         style M fill:#dcedc8
