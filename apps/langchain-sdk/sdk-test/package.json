@@ -1,0 +1,14 @@
+{
+  "name": "rag-sdk-test",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "init": "node init.js",
+    "append": "node append.js",
+    "query": "node query.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "rag": "file:../sdk"
+  }
+}
