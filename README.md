@@ -1,4 +1,4 @@
-# rag-example
+# Agents-RAG-example
 
 一个包含 3 个子项目的 RAG 示例仓库：Mastra 版本、LangChain 版本，以及面向复用的 LangChain RAG SDK + 测试/服务端 Playground。
 
@@ -6,11 +6,11 @@
 
 下表列出本仓库最常用的 3 份核心文档，并说明文件与用途。
 
-| 文档类型 | 文件 | 作用 |
-| --- | --- | --- |
-| 技术文档 | [apps/langchain-rag/RAG_FLOW.md](./apps/langchain-rag/RAG_FLOW.md) | LangChain 版本 RAG 的流程说明（入库/检索/生成/关键组件对照）。 |
-| API 文档 | [apps/langchain-sdk/nest-test/src/modules/rag/rag.controller.ts](./apps/langchain-sdk/nest-test/src/modules/rag/rag.controller.ts) | Nest 服务端 RAG 接口实现（路由/入参/返回结构）。 |
-| 部署文档 | [apps/rag-demo/docker-compose.yml](./apps/rag-demo/docker-compose.yml) | Mastra Demo 的部署编排入口（配合环境变量启动依赖与服务）。 |
+| 文档类型 | 文件                                                                                                                               | 作用                                                           |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| 技术文档 | [apps/langchain-rag/RAG_FLOW.md](./apps/langchain-rag/RAG_FLOW.md)                                                                 | LangChain 版本 RAG 的流程说明（入库/检索/生成/关键组件对照）。 |
+| API 文档 | [apps/langchain-sdk/nest-test/src/modules/rag/rag.controller.ts](./apps/langchain-sdk/nest-test/src/modules/rag/rag.controller.ts) | Nest 服务端 RAG 接口实现（路由/入参/返回结构）。               |
+| 部署文档 | [apps/rag-demo/docker-compose.yml](./apps/rag-demo/docker-compose.yml)                                                             | Mastra Demo 的部署编排入口（配合环境变量启动依赖与服务）。     |
 
 ## 2. 项目核心作用
 
@@ -25,3 +25,31 @@
 - [Mastra RAG Demo](./apps/rag-demo/README.md)
 - [LangChain RAG Demo](./apps/langchain-rag/README.md)
 - [LangChain SDK Playground](./apps/langchain-sdk/README.md)
+
+## 4. RAG 流程说明
+
+下面以 `apps/rag-demo`（Mastra 版本）为例说明端到端流程。
+
+```mermaid
+graph TD
+  subgraph Ingestion["数据入库（写入知识库）"]
+    A["① 原始文档：apps/rag-demo/src/data/sample.md"] -->|读取并解析| B["② 文档对象：MDocument（加载文本/元数据）"]
+    B -->|切片| C["③ 文本切片：Chunks（便于向量化/检索）"]
+    C -->|Embedding 请求| D["④ 向量化：Doubao Embedding（OpenAI Compatible）"]
+    D -->|返回向量| E["⑤ 向量结果：Vector[]"]
+    E -->|写入向量库| F["⑥ 向量存储：mastra.db（LibSQL/SQLite）"]
+  end
+
+  subgraph Query["检索问答（读知识库生成答案）"]
+    G["① 用户问题：CLI 输入"] -->|Embedding 请求| H["② 问题向量化：Doubao Embedding"]
+    H -->|返回向量| I["③ 查询向量：qVector"]
+    I -->|相似度检索（TopK）| F
+    F -->|取最相关切片| J["④ 上下文：Context Chunks"]
+    J -->|组装 Prompt| K["⑤ 提示词：System + Context + Question"]
+    K -->|Chat 请求（可流式）| L["⑥ 生成：Doubao Chat"]
+    L -->|输出| M["⑦ 最终回答：Answer"]
+  end
+```
+
+**数据入库阶段**：① 读取源文档 → ② 构建文档对象 → ③ 切成可检索片段 → ④ 对片段做向量化 → ⑤ 得到向量结果 → ⑥ 写入本地向量库。  
+**检索问答阶段**：① 接收问题 → ② 将问题向量化 → ③ 得到查询向量 → ④ 从向量库检索相关片段 → ⑤ 拼出带上下文的提示词 → ⑥ 调用对话模型生成 → ⑦ 返回答案。
