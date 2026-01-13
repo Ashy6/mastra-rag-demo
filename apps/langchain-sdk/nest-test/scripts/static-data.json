@@ -1,0 +1,15 @@
+[
+  {
+    "text": "卷尺（软尺）适合测量较长距离或不规则物体的长度。",
+    "metadata": { "source": "static", "topic": "卷尺" }
+  },
+  {
+    "text": "直尺适合测量较短长度并画直线，常见于学习与制图。",
+    "metadata": { "source": "static", "topic": "直尺" }
+  },
+  {
+    "text": "游标卡尺适合测量外径、内径和深度，精度通常高于普通尺子。",
+    "metadata": { "source": "static", "topic": "游标卡尺" }
+  }
+]
+
